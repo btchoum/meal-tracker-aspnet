@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using MealTracker.Web.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -19,20 +18,12 @@ namespace MealTracker.Web.Controllers
         [HttpPost("")]
         public async Task<IActionResult> PostAsync([FromBody]CreateModel model)
         {
-            var meal = new MealEntry
-            {
-                Type = model.Type,
-                Calories = model.Calories,
-                Carbs = model.Calories,
-                Comments = model.Comments,
-                Fats = model.Fats,
-                Proteins = model.Proteins,
-                CreatedAt = DateTime.UtcNow
-            };
+            var meal = model.MapToMealEntry();
 
             _context.Add(meal);
 
             await _context.SaveChangesAsync();
+            
             return CreatedAtAction("GetById", new {id = meal.Id}, meal);
         }
 

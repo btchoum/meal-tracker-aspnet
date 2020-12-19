@@ -10,6 +10,20 @@ namespace MealTracker.Web.Models
         public int Fats { get; set; }
         public int Calories { get; set; }
         public string Comments { get; set; }
+
+        public MealEntry MapToMealEntry()
+        {
+            return new MealEntry
+            {
+                Type = Type,
+                Calories = Calories,
+                Carbs = Calories,
+                Comments = Comments,
+                Fats = Fats,
+                Proteins = Proteins,
+                CreatedAt = DateTime.UtcNow
+            };
+        }
     }
     
     public class MealEntryDto
