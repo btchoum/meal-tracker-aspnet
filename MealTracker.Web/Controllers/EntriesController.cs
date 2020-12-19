@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using MealTracker.Web.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MealTracker.Web.Controllers
 {
@@ -35,6 +36,14 @@ namespace MealTracker.Web.Controllers
             if (entry == null) return NotFound();
 
             return Ok(entry);
+        }
+
+        [HttpGet("")]
+        public async Task<IActionResult> Get()
+        {
+            var entries = await _context.MealEntries.ToListAsync();
+
+            return Ok(entries);
         }
     }
 }

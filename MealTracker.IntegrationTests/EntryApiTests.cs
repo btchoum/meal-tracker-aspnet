@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using MealTracker.Web;
@@ -6,7 +9,7 @@ using Xunit;
 
 namespace MealTracker.IntegrationTests
 {
-    public class EntryApiTests: IClassFixture<CustomWebApplicationFactory<Startup>>
+    public class EntryApiTests: IClassFixture<CustomWebApplicationFactory<Startup>>, IDisposable
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
 
@@ -53,7 +56,33 @@ namespace MealTracker.IntegrationTests
             Assert.Equal(newEntry.Fats, createdEntry.Fats);
             Assert.Equal(newEntry.Comments, createdEntry.Comments);
         }
-        
+
+
+        [Fact]
+        public async Task Get_All()
+        {
+            // Arrange
+            await CreateOneEntry();
+            await CreateOneEntry();
+            
+            // Act
+            var client = _factory.CreateClient();
+            var response = await client.GetAsync("api/entries");
+            response.EnsureSuccessStatusCode();
+            
+            // Assert
+            var entries = await response.Content.ReadFromJsonAsync<IEnumerable<MealEntryDto>>();
+            Assert.NotNull(entries);
+            Assert.Equal(2, entries.Count());
+        }
+
+        private async Task CreateOneEntry()
+        {
+            var client = _factory.CreateClient();
+            var newEntry = GivenValidCreateModel();
+            var response = await client.PostAsJsonAsync("api/entries", newEntry);
+        }
+
         private static CreateModel GivenValidCreateModel()
         {
             return new CreateModel
@@ -65,6 +94,11 @@ namespace MealTracker.IntegrationTests
                 Calories = 1,
                 Comments = "Some comments"
             };
+        }
+
+        public void Dispose()
+        {
+            _factory.CleanDatabase();
         }
     }
 }
