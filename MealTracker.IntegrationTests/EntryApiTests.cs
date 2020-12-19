@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using MealTracker.Web;
+using MealTracker.Web.Controllers;
+using MealTracker.Web.Models;
 using Xunit;
 
 namespace MealTracker.IntegrationTests
@@ -21,19 +23,24 @@ namespace MealTracker.IntegrationTests
             var client = _factory.CreateClient();
 
             // Act
-            var newEntry = new
-            {
-                type = "Breakfast",
-                proteins = 1,
-                carbs = 1,
-                fats = 1,
-                calories = 1,
-                comments = "Some comments"
-            };
+            var newEntry = GivenValidCreateModel();
             var response = await client.PostAsJsonAsync("api/entries", newEntry);
 
             // Assert
             response.EnsureSuccessStatusCode(); // Status Code 200-299
+        }
+
+        private static CreateModel GivenValidCreateModel()
+        {
+            return new CreateModel
+            {
+                Type = "Breakfast",
+                Proteins = 1,
+                Carbs = 1,
+                Fats = 1,
+                Calories = 1,
+                Comments = "Some comments"
+            };
         }
     }
 }
