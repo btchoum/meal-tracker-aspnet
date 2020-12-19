@@ -1,7 +1,7 @@
+using System;
 using System.Threading.Tasks;
 using MealTracker.Web.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MealTracker.Web.Controllers
 {
@@ -26,16 +26,17 @@ namespace MealTracker.Web.Controllers
                 Carbs = model.Calories,
                 Comments = model.Comments,
                 Fats = model.Fats,
-                Proteins = model.Proteins
+                Proteins = model.Proteins,
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Add(meal);
 
             await _context.SaveChangesAsync();
-            return Created($"api/entries/{meal.Id}", meal);
+            return CreatedAtAction("GetById", new {id = meal.Id}, meal);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}"), ActionName("GetById")]
         public async Task<IActionResult> Get(int id)
         {
             var entry = await _context.MealEntries.FindAsync(id);

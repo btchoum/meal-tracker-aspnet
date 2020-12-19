@@ -11,5 +11,6 @@ namespace MealTracker.Web.Models
         public int Fats { get; set; }
         public int Calories { get; set; }
         public string Comments { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
