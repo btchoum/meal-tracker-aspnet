@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using MealTracker.Web;
@@ -56,6 +57,20 @@ namespace MealTracker.IntegrationTests
             Assert.Equal(newEntry.Fats, createdEntry.Fats);
             Assert.Equal(newEntry.Comments, createdEntry.Comments);
         }
+        
+        [Fact]
+        public async Task Get_When_Id_Does_Not_Exists()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+
+            // Act
+            var badId = int.MaxValue;
+            var response = await client.GetAsync($"api/entries/{badId}");
+            
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+         }
 
 
         [Fact]
