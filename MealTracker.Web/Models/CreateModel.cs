@@ -10,6 +10,7 @@ namespace MealTracker.Web.Models
         public int Fats { get; set; }
         public int Calories { get; set; }
         public string Comments { get; set; }
+        public DateTime? Date { get; set; }
 
         public MealEntry MapToMealEntry()
         {
@@ -21,6 +22,7 @@ namespace MealTracker.Web.Models
                 Comments = Comments,
                 Fats = Fats,
                 Proteins = Proteins,
+                Date = Date ?? DateTime.Today,
                 CreatedAt = DateTime.UtcNow
             };
         }

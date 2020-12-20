@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MealTracker.Web.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +17,7 @@ namespace MealTracker.Web.Controllers
             _context = context;
         }
 
-        // POST
+        // POST api/entries
         [HttpPost("")]
         public async Task<IActionResult> PostAsync([FromBody]CreateModel model)
         {
@@ -28,6 +30,7 @@ namespace MealTracker.Web.Controllers
             return CreatedAtAction("GetById", new {id = meal.Id}, meal);
         }
 
+        // GET api/entries/1
         [HttpGet("{id:int}"), ActionName("GetById")]
         public async Task<IActionResult> Get(int id)
         {
@@ -38,10 +41,18 @@ namespace MealTracker.Web.Controllers
             return Ok(entry);
         }
 
+        // GET api/entries
         [HttpGet("")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(DateTime? date)
         {
-            var entries = await _context.MealEntries.ToListAsync();
+            var query = _context.MealEntries.AsQueryable();
+            
+            if (date != null)
+            {
+                query = query.Where(e => e.Date >= date.Value && e.Date.Date < date.Value.AddDays(1).Date);
+            }
+            
+            var entries = await query.ToListAsync();
 
             return Ok(entries);
         }

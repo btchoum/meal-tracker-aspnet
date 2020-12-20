@@ -5,6 +5,7 @@ namespace MealTracker.Web.Models
     public class MealEntry
     {
         public int Id { get; set; }
+        public DateTime Date { get; set; }
         public string Type { get; set; }
         public int Proteins { get; set; }
         public int Carbs { get; set; }

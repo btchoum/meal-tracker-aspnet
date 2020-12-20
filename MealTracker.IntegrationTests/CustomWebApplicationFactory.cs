@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+// ReSharper disable StaticMemberInGenericType
 
 namespace MealTracker.IntegrationTests
 {
     public class CustomWebApplicationFactory<TStartup>
         : WebApplicationFactory<TStartup> where TStartup : class
     {
-        private static readonly object _lock = new object();
+        private static readonly object Lock = new object();
         private static bool _databaseInitialized;
 
         public void CleanDatabase()
@@ -48,7 +49,7 @@ namespace MealTracker.IntegrationTests
                     var logger = scopedServices
                         .GetRequiredService<ILogger<CustomWebApplicationFactory<TStartup>>>();
 
-                    lock (_lock)
+                    lock (Lock)
                     {
                         if (_databaseInitialized) return;
                         

@@ -29,7 +29,7 @@ namespace MealTracker.IntegrationTests
             var response = await client.PostAsJsonAsync("api/entries", newEntry);
 
             // Assert
-            response.EnsureSuccessStatusCode(); // Status Code 200-299
+            response.EnsureSuccessStatusCode();
         }
         
         [Fact]
@@ -44,7 +44,7 @@ namespace MealTracker.IntegrationTests
 
             // Act
             var getResponse = await client.GetAsync(getUrl);
-            getResponse.EnsureSuccessStatusCode(); // Status Code 200-299
+            getResponse.EnsureSuccessStatusCode();
             var createdEntry = await getResponse.Content.ReadFromJsonAsync<MealEntryDto>();
             
             // Assert
@@ -75,12 +75,39 @@ namespace MealTracker.IntegrationTests
             Assert.NotNull(entries);
             Assert.Equal(2, entries.Count());
         }
+        
+        [Fact]
+        public async Task Get_Filters_By_Date()
+        {
+            // Arrange
+            // Matching entries
+            await CreateOneEntry(DateTime.Parse("2020-01-01"));
+            await CreateOneEntry(DateTime.Parse("2020-01-01"));
+            // Non matching entry
+            await CreateOneEntry(DateTime.Parse("2020-01-02"));
+            
+            // Act
+            var client = _factory.CreateClient();
+            var response = await client.GetAsync("api/entries?date=2020-01-01");
+            response.EnsureSuccessStatusCode();
+            
+            // Assert
+            var entries = await response.Content.ReadFromJsonAsync<IEnumerable<MealEntryDto>>();
+            Assert.NotNull(entries);
+            Assert.Equal(2, entries.Count());
+        }
 
-        private async Task CreateOneEntry()
+        private async Task CreateOneEntry(DateTime? date = null)
         {
             var client = _factory.CreateClient();
             var newEntry = GivenValidCreateModel();
-            var response = await client.PostAsJsonAsync("api/entries", newEntry);
+
+            if (date != null)
+            {
+                newEntry.Date = date;
+            }
+            
+            await client.PostAsJsonAsync("api/entries", newEntry);
         }
 
         private static CreateModel GivenValidCreateModel()
