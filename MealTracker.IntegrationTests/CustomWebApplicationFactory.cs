@@ -10,8 +10,11 @@ using Microsoft.Extensions.Logging;
 namespace MealTracker.IntegrationTests
 {
     public class CustomWebApplicationFactory<TStartup>
-        : WebApplicationFactory<TStartup> where TStartup: class
+        : WebApplicationFactory<TStartup> where TStartup : class
     {
+        private static readonly object _lock = new object();
+        private static bool _databaseInitialized;
+
         public void CleanDatabase()
         {
             using (var scope = Services.CreateScope())
@@ -21,7 +24,7 @@ namespace MealTracker.IntegrationTests
                 Utilities.InitializeDbForTests(db);
             }
         }
-        
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.ConfigureServices(services =>
@@ -34,7 +37,7 @@ namespace MealTracker.IntegrationTests
 
                 services.AddDbContext<MealTrackerDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("InMemoryDbForTesting");
+                    options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=MealTrackerTests");
                 });
 
                 var sp = services.BuildServiceProvider();
@@ -42,20 +45,27 @@ namespace MealTracker.IntegrationTests
                 using (var scope = sp.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;
-                    var db = scopedServices.GetRequiredService<MealTrackerDbContext>();
                     var logger = scopedServices
                         .GetRequiredService<ILogger<CustomWebApplicationFactory<TStartup>>>();
 
-                    db.Database.EnsureCreated();
+                    lock (_lock)
+                    {
+                        if (_databaseInitialized) return;
+                        
+                        var db = scopedServices.GetRequiredService<MealTrackerDbContext>();
+                        db.Database.EnsureDeleted();
+                        db.Database.EnsureCreated();
 
-                    try
-                    {
-                        Utilities.InitializeDbForTests(db);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "An error occurred seeding the " +
-                                            "database with test messages. Error: {Message}", ex.Message);
+                        try
+                        {
+                            Utilities.InitializeDbForTests(db);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "An error occurred seeding the " +
+                                                "database with test messages. Error: {Message}", ex.Message);
+                        }
+                        _databaseInitialized = true;
                     }
                 }
             });
@@ -71,6 +81,7 @@ namespace MealTracker.IntegrationTests
             {
                 db.Remove(entry);
             }
+
             db.SaveChanges();
         }
     }
